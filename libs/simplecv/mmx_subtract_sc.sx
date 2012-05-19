@@ -1,0 +1,34 @@
+/* 
+	void mmx_subtract_sc( unsigned short* sub, unsigned char* in, unsigned char* out, ASMINT count )
+	register usage:
+		esi: data1  (in, uint8_t*)
+		edi: result (in, uint8_t*)
+		edx: data2  (in, uint16_t*)
+		ecx: count  (in, uint32_t)
+		eax: index  (0)
+*/
+
+; .intel_syntax noprefix
+; .globl mmx_subtract_sc
+; .hidden mmx_subtract_sc
+; mmx_subtract_sc:
+
+xor pax, pax
+
+mmx_subtract_sc_loop:
+
+	movq  mm0, [psi+pax]      /* load input data in mm0 */
+	movq  mm1, [pdx+pax*2]    /* load first 4 words in mm1 */
+	psrlw mm1, 8              /* convert to bytes */
+	movq  mm2, [pdx+8+pax*2]  /* load next 4 words in mm2 */
+	psrlw mm2, 8              /* convert to bytes */
+	packuswb mm1, mm2         /* pack into single qword */
+	psubusb  mm1, mm0         /* subtract */
+	movq [pdi+pax], mm1       /* store result in mm1 */
+
+	add pax, 8                /* FIXME: fixed step width */
+	cmp pax, pcx
+	jb mmx_subtract_sc_loop
+
+emms
+; ret

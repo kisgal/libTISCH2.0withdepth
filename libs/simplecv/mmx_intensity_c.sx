@@ -1,0 +1,54 @@
+/* 
+	int mmx_intensity_c( unsigned char* in, ASMINT count )
+	register usage:
+		eax: index  (0), result (out, uint32_t)
+		ecx: count  (in,  uint32_t)
+		esi: data   (in,  uint8_t*)
+*/
+
+; .intel_syntax noprefix
+; .globl mmx_intensity_c
+; .hidden mmx_intensity_c
+; mmx_intensity_c:
+
+pxor  mm7, mm7
+mov   eax, 255
+movd  mm2, eax
+movq  mm3, mm2
+psllq mm3, 32
+por   mm3, mm2
+xor   pax, pax
+
+mmx_intensity_c_loop:
+
+	movq  mm1, [psi+pax]
+	movq  mm4, mm3
+	pand  mm4, mm1
+	paddd mm7, mm4
+
+	psrlq mm1, 8
+	movq  mm4, mm3
+	pand  mm4, mm1
+	paddd mm7, mm4
+
+	psrlq mm1, 8
+	movq  mm4, mm3
+	pand  mm4, mm1
+	paddd mm7, mm4
+
+	psrlq mm1, 8
+	movq  mm4, mm3
+	pand  mm4, mm1
+	paddd mm7, mm4
+
+	add pax, 8
+	cmp pax, pcx
+	jb mmx_intensity_c_loop
+
+movd  eax, mm7
+psrlq mm7, 32
+movd  ecx, mm7
+add   eax, ecx
+
+emms
+; ret
